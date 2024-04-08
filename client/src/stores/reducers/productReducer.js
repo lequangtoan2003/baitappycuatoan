@@ -11,9 +11,13 @@ const productReducers = (state = initState, action) => {
       return {
         ...state,
         newData: action?.data || {},
-        categories: action?.data?.type,
       };
     case actionType.GET_PRODUCT_BY_ID:
+      return {
+        ...state,
+        data: action?.data || {},
+      };
+    case actionType.GET_PRODUCT_BY_OID:
       return {
         ...state,
         data: action?.data || {},

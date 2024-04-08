@@ -16,9 +16,12 @@ const Banner = ({ banner }) => {
   // useEffect(() => {
   //   getApiBanner();
   // }, []);
-  const fourBanners = banner.slice(0, 4);
-  const fourBannersEnd = banner.slice(4, 8);
-  console.log(banner);
+  let fourBanners;
+  let fourBannersEnd;
+  if (banner) {
+    fourBanners = banner.slice(0, 4);
+    fourBannersEnd = banner.slice(4, 8);
+  }
   return (
     <div className="bg-white rounded-md w-full flex items-center justify-center ">
       <div className="pl-4">

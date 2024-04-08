@@ -4,7 +4,7 @@ export const apigetCurrent = () =>
     try {
       const response = await axiosConfig({
         method: "GET",
-        url: "/user/get-one",
+        url: "/users/profile/",
         // headers: {
         //   authentication: token,
         // },
@@ -14,6 +14,7 @@ export const apigetCurrent = () =>
       reject(error);
     }
   });
+
 export const apigetAllUser = () =>
   new Promise(async (resolve, reject) => {
     try {

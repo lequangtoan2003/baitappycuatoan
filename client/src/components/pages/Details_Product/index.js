@@ -15,7 +15,10 @@ import {
 import { categories, prodcutDetailTabs } from "../../../utils/constant";
 
 import path from "../../../utils/path";
-import { apiGetProduct } from "../../../services/productService";
+import {
+  apiGetCategory,
+  apiGetProduct,
+} from "../../../services/productService";
 import {
   createSlug,
   formatMoney,
@@ -23,39 +26,42 @@ import {
 } from "../../../utils/helper";
 import { useSelector } from "react-redux";
 const { IoChevronBackOutline, IoIosArrowForward, CiStar } = icons;
-const DetailProduct = () => {
+const DetailProduct = (categories) => {
   const { category } = useParams();
+  console.log(category);
   // định nghĩ state có giá trị mặc định là fasle
   const [loading, setLoading] = useState(false);
-
-  const [products, setProducts] = useState(null);
+  const [products, setProducts] = useState("");
+  // const [products, setProducts] = useState(null);
   const [activeTab, setActiveTab] = useState(1);
   // params :
   // có 1 cách gọi khác là query ?=Hien?=Dang
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const getProduct = async (queries) => {
-    const data = [];
-    const response = await apiGetProduct(queries);
-    if (response.success) {
-      
-      response?.products?.map((product) => {
-        if (product?.type === category) data.push(product);
+    const response = await apiGetCategory();
+    if (response.status === "Success") {
+      response.data.map((el) => {
+        if (el?.slug === category) {
+          setProducts(el.products);
+        }
       });
-      setProducts(data);
     }
   };
-  const { categories } = useSelector((state) => state.product) 
-  console.log(categories);
-  
   useEffect(() => {
-    let param = [];
-    for (let i of params.entries()) param.push(i);
+    getProduct();
+  }, []);
+  // const { categories } = useSelector((state) => state.product);
+  // console.log(categories);
 
-    let queries = {};
-    for (let i of params) queries[i[0]] = i[1];
-    getProduct(queries);
-  }, [params]);
+  // useEffect(() => {
+  //   let param = [];
+  //   for (let i of params.entries()) param.push(i);
+
+  //   let queries = {};
+  //   for (let i of params) queries[i[0]] = i[1];
+  //   getProduct(queries);
+  // }, [params]);
 
   // import useEffect từ react
 
@@ -69,7 +75,7 @@ const DetailProduct = () => {
     <>
       {!category ? (
         navigate({ path: `/${path.HOME}` })
-      ) : loading ? (
+      ) : !products ? (
         <div className="w-full h-[200px] flex items-center justify-center">
           <ClipLoader
             loading={loading}
@@ -140,14 +146,14 @@ const DetailProduct = () => {
                   <div className=" flex flex-wrap gap-2">
                     {products?.map((el) => (
                       <Link
-                        key={el?._id}
+                        key={el?.id}
                         className=""
-                        to={`/${category}/${el?._id}/${el?.slug}`}
+                        to={`/${category}/${el?.id}/${el?.name}`}
                       >
                         <div className=" w-[185px] border rounded-lg h-[388px] bg-gray-100 cursor-pointer ">
                           <img
                             className="rounded-t-lg w-full h-[200px]"
-                            src={el.thumb?.[0]?.split(",")[0].split(" ")[0]}
+                            src={el?.thumbnail}
                             alt="home_product"
                           />
                           <div className="py-[4px] px-2">
@@ -160,22 +166,17 @@ const DetailProduct = () => {
                           <div className="px-2 flex flex-col gap-2 w-full h-[124px]">
                             <div className="w-full h-[72px] flex flex-col gap-2">
                               <p className="text-xs font-normal w-full h-fit text-gray-800 overflow-hidden overflow-ellipsis line-clamp-3 ">
-                                {el?.title}
+                                {el?.name}
                               </p>
                               <div className="flex w-full h-[15px] ">
-                                <span className="flex ">
-                                  {renderStartFromNumber(
-                                    Number(Math.random() * 4 + 1)
-                                  )}
-                                </span>
                                 <span className="ml-[4px] pl-[5px] before:absolute before:top-[50%] before:left-0 before:w-[0.5px] before:h-[12px] before:translate-y-[-50%] before:bg-gray-400 relative text-[10px] font-normal text-gray-400">
-                                  Đã bán {el?.sold}
+                                  Đã bán {el?.amount}
                                 </span>
                               </div>
                             </div>
                             <div className="flex text-base  h-[24px]">
                               <div className="font-medium ">
-                                {formatMoney(el?.prices)}
+                                {formatMoney(el?.price)}
                               </div>
                               <sup className="top-[0.5em]">đ</sup>
                             </div>

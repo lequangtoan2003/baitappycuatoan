@@ -57,12 +57,12 @@ function App() {
       <Routes>
         <Route path={path.PUBLIC} element={<Public />}>
           <Route path={path.HOME} element={<Home />} />
-          
-          {/* <Route path={path.DETAILS_PRODUCT} element={<DetailsProduct />}>
-            <Route path={path.TOP_SELLER} element={<TopSeller />} />
+
+          <Route path={path.DETAILS_PRODUCT} element={<DetailsProduct />}>
+            {/* <Route path={path.TOP_SELLER} element={<TopSeller />} />
             <Route path={path.NEW_PRODUCT} element={<NewProduct />} />
             <Route path={path.HIGH_PRICE} element={<HighPrice />} />
-            <Route path={path.LOW_PRICE} element={<LowPirce />} />
+            <Route path={path.LOW_PRICE} element={<LowPirce />} /> */}
           </Route>
           <Route path={path.CHECKOUT}>
             <Route path={path.CART} element={<Cart />} />
@@ -70,11 +70,11 @@ function App() {
           </Route>
           <Route path={path.MYACCOUNT[0]} element={<MyAccount />}>
             <Route path={path.CUSTOMER} element={<Account />} />
-            <Route path={path.ADDRESS} element={<Address />} />
+            {/* <Route path={path.ADDRESS} element={<Address />} />
             <Route path={path.NOFICATION} element={<Notification />} />
             <Route path={path.ORDERHISTORY} element={<Order />} />
             <Route path={path.PAYMENTCART} element={<PaymentCard />} /> */}
-          {/* </Route> */}
+          </Route>
 
           {/* {path.MYACCOUNT[1] && (
             <Route path={path.MYACCOUNT[1]} element={<MyAccount />}>
@@ -95,18 +95,17 @@ function App() {
             </Route>
           )} */}
           {/* <Route path={path.DETAILS_PRODUCT} element={<Details_Product />} /> */}
-          {/* <Route path={path.PRODUCT_INFO} element={<ProductCard />} />
-          <Route path={path.ALL} element={<Home />} /> */}
+          <Route path={path.PRODUCT_INFO} element={<ProductCard />} />
+          <Route path={path.ALL} element={<Home />} />
         </Route>
         {/* <Route path={path.ADMIN} element={<AdminLayOut />}>
           <Route path={path.DASHBOARD} element={DashBoard} />
           <Route path={path.MANAGER_USER} element={UserManager} />
           <Route path={path.MANAGET_PRODUCT} element={ProdManager} />
         </Route> */}
-        {/* <Route path={path.LOGIN} element={<Login />} />
+        <Route path={path.LOGIN} element={<Login />} />
 
-        <Route path={path.LOGIN_SUCCESS} element={<LoginSuccess />} /> */}
-        
+        <Route path={path.LOGIN_SUCCESS} element={<LoginSuccess />} />
       </Routes>
     </div>
   );

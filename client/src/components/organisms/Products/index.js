@@ -9,7 +9,18 @@ import { formatMoney } from "../../../utils/helper";
 import instance from "../../../axios";
 
 const { CiStar } = icons;
-const Products = ({ product }) => {
+const Products = ({ product, category }) => {
+  const data = [];
+  const data1 = [];
+  if (category) {
+    category?.map((el) => {
+      if (el.id === 3) {
+        data.push(el);
+      } else if (el.id === 2) {
+        data1.push(el);
+      }
+    });
+  }
   // const [product, setProduct] = useState("");
   // const [loading, setLoading] = useState(true);
   // const getApiProduct = () => {
@@ -37,11 +48,11 @@ const Products = ({ product }) => {
       <div className="w-full flex-col flex bg-white rounded-xl p-4">
         <h3 className="py-4 font-medium  text-lg">Giá tốt hôm nay</h3>
         <div className="flex gap-2 ">
-          {product?.map((el) => (
+          {data[0]?.products?.map((el) => (
             <Link
               className="flex"
               key={el?.id}
-              // to={`/${el?.type}/${el?._id}/${el?.slug}`}
+              to={`/${data[0]?.slug}/${el?.id}/${el?.name}`}
             >
               <div className=" w-[150px] border rounded-lg h-[265px] bg-gray-100 flex flex-col gap-2 cursor-pointer  ">
                 <img
@@ -71,11 +82,11 @@ const Products = ({ product }) => {
       <div className="w-full mb-4 rounded-xl bg-white p-4">
         <h3 className="py-4 font-medium text-lg">Sản phẩm bán chạy</h3>
         <div className="flex gap-2 ">
-          {product?.map((el) => (
+          {data1[0]?.products?.map((el) => (
             <Link
               className="flex"
               key={el?.id}
-              // to={`/${el?.type}/${el?._id}/${el?.slug}`}
+              to={`/${data1[0]?.slug}/${el?.id}/${el?.name}`}
             >
               <div className=" w-[150px] border rounded-lg h-[265px] bg-gray-100 flex flex-col gap-2 cursor-pointer  ">
                 <img

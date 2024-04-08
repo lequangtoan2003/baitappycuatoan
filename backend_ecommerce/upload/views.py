@@ -1,12 +1,13 @@
 from rest_framework import views
 from backend_ecommerce.helpers import custom_response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, DjangoModelPermissionsOrAnonReadOnly
 import cloudinary
 from .models import Photo
 from .serializers import PhotoSerializer
 
 
 class PhotoAPIView(views.APIView):
+
     def get(self, request):
         try:
             photos = Photo.objects.all()

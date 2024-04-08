@@ -5,10 +5,11 @@ import actionType from "./actionType";
 export const getCurrent = () => async (dispatch) => {
   try {
     let response = await apigetCurrent();
-    if (response?.err === 0) {
+    console.log(response);
+    if (response?.status === 200) {
       dispatch({
         type: actionType.GET_CURRENT,
-        currentData: response?.response,
+        currentData: response?.data?.data,
       });
     } else {
       dispatch({

@@ -12,7 +12,7 @@ const HeaderMenu = () => {
   const { isLoggedIn, token, current } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [isHovering, setIsHovering] = useState(false);
-  const { currentData } = useSelector((state) => state.user);
+  // const { currentData } = useSelector((state) => state.user);
   // useEffect(() => {
   //   const fetchUser = async () => {
   //     let response = await apigetCurrent(token);
@@ -31,18 +31,18 @@ const HeaderMenu = () => {
     setShowDropdown(true);
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      isLoggedIn && dispatch(getCurrent());
-    }, 100);
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     isLoggedIn && dispatch(getCurrent());
+  //   }, 100);
+  // }, [isLoggedIn]);
 
   const handleMouseLeave = () => {
     setShowDropdown(false);
   };
   return (
     <>
-      {current !== "admin" ? (
+      {isLoggedIn ? (
         <div className="flex items-start flex-4 py-2 justify-end ">
           {navigation.map((el) => {
             if (el.children) {
@@ -73,7 +73,7 @@ const HeaderMenu = () => {
                         <li
                           onClick={() => {
                             if (child.id === 5) {
-                              navigate("/");
+                              navigate({ pathname: "/login" });
                               dispatch(logout());
                             }
                             setShowDropdown(false);
@@ -141,7 +141,7 @@ const HeaderMenu = () => {
       w-[30px] h-[30px]  "
               />
               <span className="border text-white text-xs font-semibold w-[25px] h-[15px] justify-center flex items-center bg-red-500 rounded-[50%] border-red-500">
-                {isLoggedIn ? currentData?.cart?.length : 0}
+                {isLoggedIn ? 0 : 0}
               </span>
             </div>
           </Link>
@@ -250,7 +250,7 @@ const HeaderMenu = () => {
       w-[30px] h-[30px]  "
               />
               <span className="border text-white text-xs font-semibold w-[25px] h-[15px] justify-center flex items-center bg-red-500 rounded-[50%] border-red-500">
-                {isLoggedIn ? currentData?.cart?.length : 0}
+                {isLoggedIn ? 0 : 0}
               </span>
             </div>
           </Link>

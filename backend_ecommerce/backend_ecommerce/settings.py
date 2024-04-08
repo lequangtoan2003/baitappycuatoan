@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 import cloudinary.api
 from decouple import config
+from corsheaders.defaults import default_methods
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "djoser",
     "user",
+    "orders",
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
+        # Sử dụng custom permission cho các API Product và Category
         # Định nghĩa các quyền truy cập cho API
         "rest_framework.permissions.IsAdminUser",
         "rest_framework.permissions.IsAuthenticated",
@@ -89,9 +92,26 @@ DJOSER = {
         "current_user": "user.serializers.UserAccountSerializer",
     },
 }
-
-
 AUTH_USER_MODEL = "user.UserAccount"
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost:3000",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+ALLOWED_HOSTS = [".vercel.app", "*"]
 
 ROOT_URLCONF = "backend_ecommerce.urls"
 
@@ -170,9 +190,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOWED_ORIGINS = ["https://localhost:3000"]
-ALLOWED_HOSTS = [".vercel.app", "*"]
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 

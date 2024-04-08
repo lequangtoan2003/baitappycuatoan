@@ -12,7 +12,12 @@ from .models import Category, Product, ProductImage, ProductComment
 from backend_ecommerce.helpers import custom_response, parse_request
 from rest_framework.parsers import JSONParser
 from json import JSONDecodeError
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 
@@ -20,7 +25,10 @@ User = get_user_model()
 
 
 class HomePage(views.APIView):
+    permission_classes = [AllowAny]
+
     def index(request):
+
         product = Product.objects.all()
         category = Category.objects.all()
         context = {"products": product, "categories": category}
@@ -34,6 +42,8 @@ class HomePage(views.APIView):
 
 
 class CategoryAPIView(views.APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         try:
             # đầu tiên, query tất cả record của Category
@@ -75,6 +85,8 @@ class CategoryAPIView(views.APIView):
 
 
 class CategoryDetailAPIView(views.APIView):
+    permission_classes = [AllowAny]
+
     def get_object(self, id_slug):
         try:
             return Category.objects.get(id=id_slug)
@@ -113,6 +125,8 @@ class CategoryDetailAPIView(views.APIView):
             )
 
     def delete(self, request, id_slug):
+        permission_classes = [AllowAny]
+
         try:
             category = self.get_object(id_slug)
             category.delete()
@@ -132,6 +146,8 @@ class CategoryDetailAPIView(views.APIView):
 
 
 class ProductViewAPI(views.APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
         try:
             products = Product.objects.all()
@@ -169,8 +185,12 @@ class ProductViewAPI(views.APIView):
 
 
 class ProductDetailAPIView(views.APIView):
+    permission_classes = [AllowAny]
+
     def get_object(self, id_slug):
+
         try:
+            print(id_slug)
             return Product.objects.get(id=id_slug)
         except:
             raise Http404
@@ -178,6 +198,8 @@ class ProductDetailAPIView(views.APIView):
     def get(self, request, id_slug, format=None):
         try:
             product = self.get_object(id_slug)
+            print(id_slug)
+            print("abc")
             serializer = ProductSerializer(product)
             return custom_response(
                 "Get product successfully!", "Success", serializer.data, 200
@@ -343,7 +365,7 @@ class ProductCommentAPIView(views.APIView):
     # Nếu không chỉ định permission_classes thì mặc định sẽ là [IsAuthenticated]
     # Còn permission_classes=[IsAdminUser] thì chỉ cho phép admin truy cập vào API này
     # Update hết tất cả các API trong project về dạng này nhé
-    permission_classes = [AllowAny]
+    # permission_classes = [AllowAny]
 
     def post(self, request, product_id_slug):
         try:

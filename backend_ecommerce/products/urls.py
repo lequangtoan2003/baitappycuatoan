@@ -3,7 +3,6 @@ from products import views
 from django.http import HttpResponse
 
 urlpatterns = [
-    
     path("category/", views.CategoryAPIView.as_view()),
     path("category/<slug:id_slug>/", views.CategoryDetailAPIView.as_view()),
     # path("product/<slug:product_id_slug>/images/", views.ProductImageAPIView.as_view()),

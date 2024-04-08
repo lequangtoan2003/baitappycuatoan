@@ -4,8 +4,18 @@ import { Button } from "../../atoms";
 import { Link, NavLink, useParams } from "react-router-dom";
 import path from "../../../utils/path";
 import {
+  apiCreateOrderDetailByPidAndOid,
+  apiGetCategory,
+  apiGetCategoryById,
+  apiGetOrder,
+  apiGetOrderById,
+  apiGetOrderDetailByOidDetal,
+  apiGetOrderProduct,
+  apiGetOrders,
   apiGetProduct,
   apiGetProductById,
+  apiOrdersProduct,
+  apiUpdateOrderDetailByPidAndOid,
 } from "../../../services/productService";
 import {
   createSlug,
@@ -17,78 +27,227 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { apiUpdateCart } from "../../../services/userService";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrent } from "../../../stores/actions/userAction";
-import { categories } from "../../../utils/constant";
-import { apiGetProductAction } from "../../../stores/actions/prodAction";
+import { categories, price } from "../../../utils/constant";
+import {
+  apiGetProductAction,
+  getProductByPidAndOid,
+} from "../../../stores/actions/prodAction";
 const { CiStar, GoPlus, FiMinus } = icons;
 const ProductCard = () => {
   const [product, setProduct] = useState(null);
+  const [category_id, setCategory_id] = useState(null);
   const [productCate, setProductCate] = useState(null);
+  const [account, setAccount] = useState("");
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [orders, setOrders] = useState("");
   const [type, setType] = useState("");
   const dispatch = useDispatch();
-  const { category, id, title } = useParams();
+  const { category, id, name } = useParams();
+  const { currentData } = useSelector((state) => state.user);
   const getProductById = async (id) => {
     const response = await apiGetProductById(id);
-    if (response?.success) setProduct(response?.productDatas);
-  };
-  const fetchApiProduct = async () => {
-    const response = await apiGetProduct({
-      // page: Math.floor(Math.random(10) * 10) + 1,
-      // page: Math.floor(Math.random(10) * 10) + 1,
-      limit: 8,
-      sort: "-prices",
-      type: category,
-    });
-    if (response?.success) {
-      setProductCate(response?.products);
-    }
+    if (response.status === "Success") setProduct(response.data);
   };
 
-  const convertCategory = () => {
-    let categoryConvert;
-    categories.map((el) => {
-      if (createSlug(el.categoryName) === category) {
-        categoryConvert = el.categoryName;
-      }
-    });
-
-    return categoryConvert;
-  };
-  const categoryName = convertCategory();
-  const { currentData } = useSelector((state) => state.user);
-  const handleClickOptions = async (flag) => {
-    if (flag === "CART") {
-      if (!currentData) throw new Error("Please login first");
-      const response = await apiUpdateCart({
-        pid: product?._id,
-        quantity,
-        color: product?.color[0] ? product?.color[0] : "Không có",
-        type: "increase",
-      });
-      if (response?.success) {
-        dispatch(getCurrent());
-        const currentQuantity = JSON.parse(localStorage.getItem(product?._id));
-
-        if (currentQuantity) {
-          const updatedQuantity = Number(currentQuantity) + quantity;
-          localStorage.setItem(product?._id, JSON.stringify(updatedQuantity));
-        } else {
-          const updatedQuantity = quantity;
-          localStorage.setItem(product?._id, JSON.stringify(updatedQuantity));
+  const getCategoryById = async (id) => {
+    const response = await apiGetCategory();
+    if (response.status === "Success") {
+      response?.data?.map((el) => {
+        if (el?.slug === category) {
+          setCategory_id(el);
         }
-      }
+      });
     }
   };
+
+  // const fetchApiProduct = async () => {
+  //   const response = await apiGetProduct({
+  //     // page: Math.floor(Math.random(10) * 10) + 1,
+  //     // page: Math.floor(Math.random(10) * 10) + 1,
+  //     limit: 8,
+  //     sort: "-prices",
+  //     type: category,
+  //   });
+  //   if (response?.success) {
+  //     setProductCate(response?.products);
+  //   }
+  // };
+
+  // const convertCategory = () => {
+  //   let categoryConvert;
+  //   categories.map((el) => {
+  //     if (createSlug(el.categoryName) === category) {
+  //       categoryConvert = el.categoryName;
+  //     }
+  //   });
+
+  //   return categoryConvert;
+  // };
+  // const categoryName = convertCategory();
+  // const { currentData } = useSelector((state) => state.user);
+  const apiGetOrder = async () => {
+    const response = await apiGetOrderProduct();
+    if (response?.status === "Success") {
+      const findEl = response.data.filter(
+        (el) => el.user_id === currentData?.id
+      );
+      setAccount(findEl[0]);
+      if (findEl.length === 0) {
+        await apiOrdersProduct({
+          receiver_name: "",
+          receiver_phone: "",
+          receiver_address: "",
+          description: "",
+          is_ordered: true,
+          is_paid: false,
+          user_id: currentData?.id,
+        });
+      }
+
+      // response.data?.map((el) => {
+      //   console.log(el.includes(currentData?.  id));
+      // });
+
+      // const response = apiOrdersProduct({
+      //   receiver_name: "",
+      //   receiver_phone: "",
+      //   receiver_address: "",
+      //   description: "",
+      //   is_ordered: true,
+      //   is_paid: false,
+      //   user_id: currentData?.id,
+      // });
+      // console.log(response);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
-    getProductById(id) && fetchApiProduct();
+    apiGetOrder() && dispatch(getCurrent());
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
+  const handleClickOptions = async (flag) => {
+    if (flag === "CART") {
+      if (currentData) {
+        const getIdByOrder = await apiGetOrderDetailByOidDetal(account?.id);
+        const selectEl = getIdByOrder?.data?.filter(
+          (el) => el.product_id === product?.id
+        );
+
+        if (selectEl.length > 0) {
+          selectEl?.map(async (el) => {
+            const currentQuantity = JSON.parse(
+              localStorage.getItem(el?.product_id)
+            );
+            if (el?.product_id === product?.id) {
+              if (currentQuantity) {
+                const updatedQuantity = Number(currentQuantity) + quantity;
+                const response = await apiUpdateOrderDetailByPidAndOid(
+                  account?.id,
+                  el?.id,
+                  {
+                    amount: updatedQuantity,
+                    price: product?.price,
+                    discount: "10",
+                    order_id: account?.id,
+                    product_id: product?.id,
+                  }
+                );
+                console.log(response);
+
+                localStorage.setItem(
+                  el?.product_id,
+                  JSON.stringify(updatedQuantity)
+                );
+              }
+              // const response = await apiUpdateOrderDetailByPidAndOid(account?.id, product?.id, {
+              //   amount : quantity
+              // })
+            }
+          });
+        } else {
+          const updatedQuantity = quantity;
+          const response = await apiCreateOrderDetailByPidAndOid(account?.id, {
+            amount: updatedQuantity,
+            price: product?.price,
+            discount: "10",
+            order_id: account?.id,
+            product_id: product?.id,
+          });
+          console.log(response);
+          if (response?.status === "Success") {
+            localStorage.setItem(
+              response?.data?.product_id,
+              JSON.stringify(updatedQuantity)
+            );
+          }
+        }
+
+        // const response = await apiGetOrderProduct();
+        // if (response) {
+        //   response?.data?.map(async (el) => {
+        //     if (el?.user_id === currentData?.id) {
+        //       console.log(el);
+        //     } else {
+        //       await apiOrdersProduct({
+        //         receiver_name: currentData?.first_name + currentData?.last_name,
+        //         receiver_phone: currentData?.phone,
+        //         receiver_address: currentData?.address,
+        //         description: "",
+        //         user_id: currentData?.id,
+        //       });
+        //     }
+        //   });
+        // }
+        // console.log(response);
+      }
+      // const response = await apiOrdersProduct({
+      //   receiver_name: currentData?.first_name,
+      //   receiver_phone: currentData?.phone,
+      //   receiver_address: currentData?.address,
+      //   description: "",
+      //   user_id: currentData?.id,
+      // });
+
+      // if (response.status === "Success") {
+      //   dispatch(getProductByPidAndOid(response?.data?.id, product?.id));
+      // }
+      // dispatch(getProductByPidAndOid())
+      //   // if (!currentData) throw new Error("Please login first");
+      //   const response = await apiUpdateCart({
+      //     pid: product?._id,
+      //     quantity,
+      //     color: product?.color[0] ? product?.color[0] : "Không có",
+      //     type: "increase",
+      //   });
+      //   if (response?.success) {
+      //     dispatch(getCurrent());
+      //     const currentQuantity = JSON.parse(localStorage.getItem(product?._id));
+      //     if (currentQuantity) {
+      //       const updatedQuantity = Number(currentQuantity) + quantity;
+      //       localStorage.setItem(product?._id, JSON.stringify(updatedQuantity));
+      //     } else {
+      //       const updatedQuantity = quantity;
+      //       localStorage.setItem(product?._id, JSON.stringify(updatedQuantity));
+      //     }
+      //   }
+    }
+  };
+  // useEffect(() => {
+  //   apiGetOrder();
+  // }, []);
+  useEffect(() => {
+    setLoading(true);
+    getProductById(id) && getCategoryById();
 
     setTimeout(() => {
       setLoading(false);
     }, 1000);
     window.scrollTo(0, 0);
-  }, [category, id, title]);
+  }, [category, id]);
   // const handleQuantity = (type) => {
   //   if (type === "increase") {
   //     setQuantity(quantity + 1);
@@ -109,12 +268,7 @@ const ProductCard = () => {
       }
     }
   };
-  // const updatedPrice = price.reduce((total, currentValue, index, arr) => {
-  //   const x = total * currentValue;
-  //   setPrice(x);
-  //   return x;
-  // }, quantity);
-  // console.log(updatedPrice);
+
   return (
     <>
       {loading ? (
@@ -129,18 +283,16 @@ const ProductCard = () => {
         </div>
       ) : (
         <div className="w-main flex flex-col  ">
-          <BreadCrumbs title={product?.title} category={categoryName} />
+          <BreadCrumbs title={product?.name} category={category_id?.name} />
+
           <div className="w-full flex">
             <div className="ml-4 w-[70%] flex flex-col gap-4 ">
               <div className="flex gap-2 w-full">
                 <div className="w-[50%] m-4 bg-white rounded-xl ">
                   <div className="w-[368px] border m-6 rounded-xl h-[360px]">
-                    <img
-                      src={product?.thumb?.[0]?.split(",")[0].split(" ")[0]}
-                      alt="thumb"
-                    />
+                    <img src={product?.thumbnail} alt="thumb" />
                   </div>
-                  <div className="m-6 w-full flex gap-2">
+                  {/* <div className="m-6 w-full flex gap-2">
                     {product?.images?.map((el, index) => (
                       <div
                         key={index}
@@ -153,7 +305,7 @@ const ProductCard = () => {
                         />
                       </div>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
                 <div className="w-[43%] rounded-xl flex-col my-4  bg-white">
                   <div className="flex p-4 pb-1 items-center gap-2">
@@ -165,15 +317,15 @@ const ProductCard = () => {
 
                     <p className="font-normal flex gap-1  text-sm">
                       <span>Thương hiệu:</span>
-                      <Link to={product?.brandLink} className="">
+                      {/* <Link to={product?.brandLink} className="">
                         <span className="text-blue-700 cursor-pointer">
                           {product?.brand}
                         </span>
-                      </Link>
+                      </Link> */}
                     </p>
                   </div>
                   <div className="px-4 flex flex-col gap-2">
-                    <h3 className="font-medium text-xl">{product?.title}</h3>
+                    <h3 className="font-medium text-xl">{product?.name}</h3>
                     <div className="flex items-center gap-2 text-sm ">
                       <span className="text-gray-400 flex gap-1">
                         {renderStartFromNumber(Number(5))}
@@ -184,7 +336,7 @@ const ProductCard = () => {
                       </span>
                     </div>
                     <div className="font-semibold text-2xl">
-                      {formatMoney(product?.prices)}
+                      {formatMoney(product?.price)}
                       <sup>đ</sup>
                     </div>
                   </div>
@@ -293,7 +445,7 @@ const ProductCard = () => {
                 <div className="flex flex-col gap-2">
                   <span className="font-medium">Tạm tính</span>
                   <div className="flex font-semibold text-2xl">
-                    {formatMoney(product?.prices * quantity)}
+                    {formatMoney(product?.price * quantity)}
                     <sub className="">đ</sub>
                   </div>
                 </div>
@@ -319,7 +471,7 @@ const ProductCard = () => {
               </div>
             </div>
           </div>
-          <div className="m-4 flex ">
+          {/* <div className="m-4 flex ">
             <div className="bg-white w-full p-4 rounded-xl flex flex-col gap-4 ">
               <h3 className="font-medium">Sản phẩm tương tự</h3>
               <div className="flex gap-2">
@@ -355,7 +507,7 @@ const ProductCard = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       )}
     </>

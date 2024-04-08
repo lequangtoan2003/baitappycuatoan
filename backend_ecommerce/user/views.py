@@ -1,4 +1,4 @@
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from backend_ecommerce.helpers import custom_response
 from user.serializers import UserAccountSerializer, UserAccountUpdateSerializer
 from rest_framework import views

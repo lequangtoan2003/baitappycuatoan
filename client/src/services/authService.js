@@ -1,27 +1,27 @@
 import axiosConfig from "../axios";
-export const apiRegister = (phone) =>
+export const apiRegister = (data) =>
   new Promise(async (resolve, reject) => {
     try {
       const response = await axiosConfig({
         method: "POST",
-        url: "/auth/register",
-        data: { phone },
+        url: "/users/",
+        data,
       });
+      console.log(response);
       resolve(response);
     } catch (error) {
       reject(error);
     }
   });
 
-export const apiLoginSuccess = (id, tokenLogin) =>
+export const apiLoginSuccess = (payload) =>
   new Promise(async (resolve, reject) => {
     try {
       const response = await axiosConfig({
         method: "POST",
-        url: "/auth/login-success",
-        data: { id, tokenLogin },
+        url: "/jwt/create/",
+        data: payload,
       });
-      console.log(response);
       resolve(response);
     } catch (error) {
       reject(error);

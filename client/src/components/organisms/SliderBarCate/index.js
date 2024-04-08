@@ -42,60 +42,60 @@ const SliderCate = ({ products }) => {
     else setSelected((prev) => [...prev, e.target.value]);
   };
 
-  const handleSelectBrand = (e) => {
-    const alreadyBrand = selectedBrand.find((el) => el === e.target.value);
-    if (alreadyBrand)
-      setSelectedBrand((prev) => prev.filter((el) => el !== e.target.value));
-    else setSelectedBrand((prev) => [...prev, e.target.value]);
-  };
-
-  // const { categories } = useSelector((state) => state.product)
-  // console.log(categories);
-  const data = [];
-  const { newData } = useSelector((state) => state.product);
-  newData?.map((datas) => {
-    if (datas?.type === category) data.push(datas);
-  });
-  console.log(data);
-  const brand = [];
-  const brandSort = [];
-  data?.map((el) => {
-    if (el?.brand) {
-      brand.push(el?.brand);
-    }
-  });
-  const countMap = brand.reduce((acc, name) => {
-    acc[name] = (acc[name] || 0) + 1;
-    return acc;
-  }, {});
-
-  for (const key in countMap) {
-    brandSort.push(key);
-  }
-
-  // console.log(selected);
-  // const handleValueChange = (e) => {
-  //   console.log(e);
+  // const handleSelectBrand = (e) => {
+  //   const alreadyBrand = selectedBrand.find((el) => el === e.target.value);
+  //   if (alreadyBrand)
+  //     setSelectedBrand((prev) => prev.filter((el) => el !== e.target.value));
+  //   else setSelectedBrand((prev) => [...prev, e.target.value]);
   // };
-  useEffect(() => {
-    if (selected.length > 0) {
-      navigate({
-        pathname: `/${category}`,
-        search: createSearchParams({
-          color: selected.join(","),
-        }).toString(),
-      });
-    } else if (selectedBrand.length > 0) {
-      navigate({
-        pathname: `/${category}`,
-        search: createSearchParams({
-          brand: selectedBrand.join(","),
-        }).toString(),
-      });
-    } else {
-      navigate(`/${category}`);
-    }
-  }, [selected, selectedBrand]);
+
+  // // const { categories } = useSelector((state) => state.product)
+  // // console.log(categories);
+  // const data = [];
+  // const { newData } = useSelector((state) => state.product);
+  // newData?.map((datas) => {
+  //   if (datas?.type === category) data.push(datas);
+  // });
+  // console.log(data);
+  // const brand = [];
+  // const brandSort = [];
+  // data?.map((el) => {
+  //   if (el?.brand) {
+  //     brand.push(el?.brand);
+  //   }
+  // });
+  // const countMap = brand.reduce((acc, name) => {
+  //   acc[name] = (acc[name] || 0) + 1;
+  //   return acc;
+  // }, {});
+
+  // for (const key in countMap) {
+  //   brandSort.push(key);
+  // }
+
+  // // console.log(selected);
+  // // const handleValueChange = (e) => {
+  // //   console.log(e);
+  // // };
+  // useEffect(() => {
+  //   if (selected.length > 0) {
+  //     navigate({
+  //       pathname: `/${category}`,
+  //       search: createSearchParams({
+  //         color: selected.join(","),
+  //       }).toString(),
+  //     });
+  //   } else if (selectedBrand.length > 0) {
+  //     navigate({
+  //       pathname: `/${category}`,
+  //       search: createSearchParams({
+  //         brand: selectedBrand.join(","),
+  //       }).toString(),
+  //     });
+  //   } else {
+  //     navigate(`/${category}`);
+  //   }
+  // }, [selected, selectedBrand]);
 
   return (
     <div className="p-4 flex flex-col gap-4">
@@ -194,7 +194,7 @@ const SliderCate = ({ products }) => {
       </div>
       <div className="flex flex-col gap-2">
         <h3>Thương hiệu</h3>
-        {brandSort?.map((el, index) => (
+        {/* {brandSort?.map((el, index) => (
           <div key={index} className="flex gap-2">
             <input
               id={el}
@@ -209,7 +209,7 @@ const SliderCate = ({ products }) => {
             />
             <span className="text-sm">{el}</span>
           </div>
-        ))}
+        ))} */}
       </div>
       {/* <div className="flex flex-col gap-2">
         <h3>Thương hiệu</h3>

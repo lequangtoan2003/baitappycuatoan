@@ -11,18 +11,43 @@ import { Button, Input } from "../../atoms/index";
 import OtpInput, { ResendOTP } from "otp-input-react";
 import icons from "../../../utils/icons";
 import { useDispatch } from "react-redux";
+// import { apiLoginSuccess, apiRegister } from "../../../services/authService";
+import { loginSuccessAction } from "../../../stores/actions/authAction";
 import { apiRegister } from "../../../services/authService";
 // import { apiRegister } from "../../services/authService";
 const { MdOutlineArrowBackIos, BsFillShieldLockFill, CgSpinner } = icons;
-
-const Login = () => {
+const Login = ({ login, isAuthenticated }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [payload, setPayload] = useState({
-    name: "",
-    phone: "",
+    email: "",
     password: "",
   });
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+  const { username, password } = formData;
+  console.log(formData);
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const onSubmit = async () => {
+    // const response = await apiLoginSuccess(formData);
+    // console.log(response);
+    dispatch(loginSuccessAction(formData));
+    setFormData({});
+    setTimeout(() => {
+      navigate({ pathname: "/" });
+    }, 2000);
+  };
+  const onRegister = async () => {
+    const response = await apiRegister(formData);
+    if (response.status === 201) {
+      setFormData({});
+      navigate({ path: `/${path.LOGIN}` });
+    }
+  };
+
   const [otp, setOtp] = useState("");
   const [isEmail, setIsEmail] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -34,8 +59,6 @@ const Login = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      let response = await apiRegister(phone);
-      console.log(response);
       // if (response?.err === 0) {
       //   setPhone(response?.response);
       // } else {
@@ -109,7 +132,6 @@ const Login = () => {
     //     setLoading(false);
     //   });
   };
-  console.log(phone);
   // const handleRecaptchaVerify = () => {
   //   if (!window.recaptchaVerify) {
   //     window.recaptchaVerify = new RecaptchaVerifier(
@@ -293,8 +315,32 @@ const Login = () => {
                   <h1 className="text-2xl font-medium">Tạo tài khoản</h1>
                   <span>Vui lòng nhập số điện thoại</span>
                 </div>
-                <Input nameKey="Số điện thoại" />
-                <Button name="Tiếp Tục" />
+                <input
+                  type="username"
+                  placeholder="username"
+                  name="username"
+                  value={username}
+                  onChange={(e) => onChange(e)}
+                  required
+                  className={
+                    "px-4 py-2 rounded-md border w-[410px]  ml-4 placeholder:text-sm  outline-none"
+                  }
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => onChange(e)}
+                  minLength="6"
+                  required
+                  className={
+                    "px-4 py-2 rounded-md border w-[410px]  ml-4 placeholder:text-sm  outline-none"
+                  }
+                />
+                <div className="pt-4">
+                  <Button name={"Đăng nhập"} handleOnclick={onRegister} />
+                </div>
 
                 <span className="relative flex items-center justify-center px-4 pt-16 ml-4 w-[410px]">
                   <span className=" relative text-gray-500 text-lg px-4 bg-white z-20">
@@ -340,20 +386,32 @@ const Login = () => {
                   <h1 className="text-2xl font-medium">Đăng nhập bằng email</h1>
                   <span>Nhập email và mật khẩu tài khoản Tiki</span>
                 </div>
-                <Input
-                  nameKey={"abc@gmail.com"}
-                  style={
+
+                <input
+                  type="username"
+                  placeholder="username"
+                  name="username"
+                  value={username}
+                  onChange={(e) => onChange(e)}
+                  required
+                  className={
                     "px-4 py-2 rounded-md border w-[410px]  ml-4 placeholder:text-sm  outline-none"
                   }
                 />
-                <Input
-                  nameKey={"Mật khẩu"}
-                  style={
+                <input
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => onChange(e)}
+                  minLength="6"
+                  required
+                  className={
                     "px-4 py-2 rounded-md border w-[410px]  ml-4 placeholder:text-sm  outline-none"
                   }
                 />
                 <div className="pt-4">
-                  <Button name={"Đăng nhập"} />
+                  <Button name={"Đăng nhập"} handleOnclick={onSubmit} />
                 </div>
                 <div className="flex flex-col text-sm ml-4 font-normal pt-4 text-blue-500">
                   <span

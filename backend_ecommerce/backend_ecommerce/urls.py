@@ -22,10 +22,17 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
+
+# Tạo một router mới
+# Đăng ký các URL của user và JWT
+
+# Bổ sung JWT URLs
 urlpatterns = [
-    # path("admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
     path("api/v1/", include("products.urls")),
+    path("api/v1/", include("orders.urls")),
     path("api/v1/", include("upload.urls")),
+    path("api/v1/", include("user.urls")),
     path("api/v1/", include("djoser.urls")),
     path("api/v1/", include("djoser.urls.jwt")),
 ]

@@ -2,6 +2,7 @@ import actionType from "../actions/actionType";
 const initState = {
   isLoggedIn: false,
   token: null,
+  refreshToken: null,
   current: null,
 };
 
@@ -11,15 +12,15 @@ const authReducer = (state = initState, action) => {
       return {
         ...state,
         isLoggedIn: action.data ? true : false,
-        token: action.data,
-        current: action.role,
+        token: action?.data?.access,
+        refreshToken: action?.data?.refresh,
       };
     case actionType.LOGOUT:
       return {
         ...state,
         isLoggedIn: false,
         token: null,
-        current: null,
+        refreshToken: null,
       };
     default:
       return state;

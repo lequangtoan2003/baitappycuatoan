@@ -6,8 +6,11 @@ import icons from "../../../utils/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrent } from "../../../stores/actions/userAction";
 import {
+  apiGetOrderDetailByOidDetal,
+  apiGetOrderProduct,
   apiGetProduct,
   apiGetProductById,
+  apiOrdersProduct,
 } from "../../../services/productService";
 import { emtyCart } from "../../atoms/images";
 import { formatMoney, renderStartFromNumber } from "../../../utils/helper";
@@ -15,6 +18,7 @@ import { apiRemoveCart, apiUpdateCart } from "../../../services/userService";
 import { useForm } from "react-hook-form";
 import { encrypt, decrypt, compare } from "n-krypta";
 import { Base64 } from "js-base64";
+import { getProductByOidDetail } from "../../../stores/actions/prodAction";
 const { CiStar, RiDeleteBin6Line, CiDeliveryTruck, GoPlus, FiMinus } = icons;
 const Cart = () => {
   const dispatch = useDispatch();
@@ -24,7 +28,7 @@ const Cart = () => {
   const { currentData } = useSelector((state) => state.user);
   const [products, setProducts] = useState(null);
   const [isAllChecked, setIsAllChecked] = useState(false);
-
+  const [saveProd, setSaveProd] = useState("");
   const [selectedItem, setSelectedItem] = useState([]);
   const getApiProduct = async () => {
     const response = await apiGetProduct({
@@ -33,6 +37,7 @@ const Cart = () => {
     });
     if (response?.success) setProducts(response?.products);
   };
+  const [order, setOrder] = useState(null);
   const navigate = useNavigate();
 
   const handleRemoveProduct = async (id) => {
@@ -58,9 +63,9 @@ const Cart = () => {
       localStorage.removeItem(id);
     }
   };
-  useEffect(() => {
-    getApiProduct();
-  }, []);
+  // useEffect(() => {
+  //   getApiProduct();
+  // }, []);
   const getLocal = (id) => localStorage.getItem(id);
 
   const handleChange = (e) => {
@@ -141,9 +146,9 @@ const Cart = () => {
       // console.log(encodedData);
     });
   };
-  const isValue = currentData?.cart?.map((item) => {
-    return item;
-  });
+  // const isValue = currentData?.cart?.map((item) => {
+  //   return item;
+  // });
 
   function getKeysFromLocalStorage() {
     const keys = [];
@@ -176,52 +181,52 @@ const Cart = () => {
 
   // }, [findIsCheckedFromCurrent]);
 
-  if (getKeys.length === currentData?.cart?.length) {
-    isValue?.map((item) => {
-      item.isChecked = true;
-    });
-  } else {
-    currentData?.cart?.map((item) => {
-      if (getKeysFromLocalStorage().includes(item?.product?._id.slice(-4))) {
-        item.isChecked = true;
-      } else {
-        item.isChecked = false;
-      }
-    });
-  }
-  const findIsChecked = currentData?.cart?.filter(
-    (item) => item.isChecked === true
-  );
-  const postIds = findIsChecked?.map((item) => {
-    return item?.product?._id;
-  });
-  if (
-    isValue?.length > 0 &&
-    findIsChecked?.length === currentData?.cart?.length
-  ) {
-    localStorage.setItem("allCheckbox", JSON.stringify(true));
-    localStorage.setItem("selectedId", JSON.stringify(postIds));
-  } else {
-    localStorage.removeItem("allCheckbox");
-    localStorage.removeItem("selectedId");
-  }
+  // if (getKeys.length === currentData?.cart?.length) {
+  //   isValue?.map((item) => {
+  //     item.isChecked = true;
+  //   });
+  // } else {
+  //   currentData?.cart?.map((item) => {
+  //     if (getKeysFromLocalStorage().includes(item?.product?._id.slice(-4))) {
+  //       item.isChecked = true;
+  //     } else {
+  //       item.isChecked = false;
+  //     }
+  //   });
+  // }
+  // const findIsChecked = currentData?.cart?.filter(
+  //   (item) => item.isChecked === true
+  // );
+  // const postIds = findIsChecked?.map((item) => {
+  //   return item?.product?._id;
+  // });
+  // if (
+  //   isValue?.length > 0 &&
+  //   findIsChecked?.length === currentData?.cart?.length
+  // ) {
+  //   localStorage.setItem("allCheckbox", JSON.stringify(true));
+  //   localStorage.setItem("selectedId", JSON.stringify(postIds));
+  // } else {
+  //   localStorage.removeItem("allCheckbox");
+  //   localStorage.removeItem("selectedId");
+  // }
 
-  useEffect(() => {
-    if (
-      JSON.parse(localStorage.getItem("selectedId"))?.length ===
-      currentData?.cart?.length
-    ) {
-      setIsAllChecked(true);
-      localStorage.setItem("allCheckbox", JSON.stringify(true));
-    } else if (
-      JSON.parse(localStorage.getItem("selectedId"))?.length !==
-      currentData?.cart?.length
-    ) {
-      setIsAllChecked(false);
-      localStorage.removeItem("allCheckbox");
-      localStorage.removeItem("selectedId");
-    }
-  }, [JSON.parse(localStorage.getItem("selectedId")), currentData]);
+  // useEffect(() => {
+  //   if (
+  //     JSON.parse(localStorage.getItem("selectedId"))?.length ===
+  //     currentData?.cart?.length
+  //   ) {
+  //     setIsAllChecked(true);
+  //     localStorage.setItem("allCheckbox", JSON.stringify(true));
+  //   } else if (
+  //     JSON.parse(localStorage.getItem("selectedId"))?.length !==
+  //     currentData?.cart?.length
+  //   ) {
+  //     setIsAllChecked(false);
+  //     localStorage.removeItem("allCheckbox");
+  //     localStorage.removeItem("selectedId");
+  //   }
+  // }, [JSON.parse(localStorage.getItem("selectedId")), currentData]);
 
   const handleQuantity = async (id, type) => {
     let local = getLocal(id);
@@ -280,14 +285,69 @@ const Cart = () => {
       }
     }
   };
+  const getOrder = async () => {
+    const response = await apiGetOrderProduct();
+    if (response.status === "Success") {
+      const findCurrentUser = response?.data?.filter(
+        (el) => el.user_id === currentData?.id
+      );
+      // console.log(findAllOrders);
+      if (findCurrentUser) {
+        const getAllOrders = await apiGetOrderDetailByOidDetal(
+          findCurrentUser[0]?.id
+        );
+        if (getAllOrders?.status === "Success") setOrder(getAllOrders.data);
+      }
+    }
+  };
+
+  const filterProd = () => {
+    const data = [];
+    if (saveProd) {
+      saveProd?.map((el) => {
+        if (order) {
+          order?.map((or) => {
+            if (or?.product_id === el?.id) {
+              data.push(el);
+            }
+          });
+        }
+      });
+    }
+
+    return data;
+  };
+
+  const getAllProducts = async () => {
+    const response = await apiGetProduct();
+    if (response.status === "Success") {
+      setSaveProd(response.data);
+      // response?.data?.map((el) => {
+      //   if (order) {
+      //     order?.map((or) => {
+      //       if (or?.product_id === el?.id) {
+      //         setSaveProd(el);
+      //       }
+      //     });
+      //   }
+      // });
+    }
+  };
+  useEffect(() => {
+    getOrder() && dispatch(getCurrent()) && getAllProducts();
+    setTimeout(() => {
+      filterProd();
+    }, 200);
+  }, []);
+  console.log(filterProd());
   return (
     <div className="w-main flex flex-col  ">
       <div className="w-full flex">
-        {currentData?.cart?.length > 0 ? (
+        {filterProd()?.length > 0 ? (
           <div className="ml-4 w-[70%] flex flex-col">
             <div className="flex flex-col w-full">
               <h3 className="text-xl font-medium p-4 pb-0 ">GIỎ HÀNG</h3>
-              {currentData?.cart?.length === 0 ? (
+              {filterProd()?.length === 0 ? (
                 <div className="w-full flex-col">
                   <div className="flex items-center justify-center">
                     <img
@@ -319,7 +379,7 @@ const Cart = () => {
                             )}
                           />
                           <span>Tất cả </span>
-                          <span>({currentData?.cart?.length} sản phẩm)</span>
+                          <span>({filterProd()?.length} sản phẩm)</span>
                         </div>
                         <span>Đơn giá</span>
                         <span>Số lượng</span>
@@ -330,9 +390,9 @@ const Cart = () => {
                       </div>
                     </div>
                   </div>
-                  {currentData?.cart &&
-                    currentData?.cart?.map((el) => (
-                      <div className="mx-4   flex " key={el._id}>
+                  {filterProd() &&
+                    filterProd()?.map((el) => (
+                      <div className="mx-4   flex " key={el.id}>
                         <div className="bg-white w-full p-4 rounded-xl">
                           <div className="flex justify-between items-center ">
                             <div className=" w-[324px] gap-2 flex ">
@@ -349,23 +409,16 @@ const Cart = () => {
 
                               <div className="w-[80px] h-[80px]">
                                 <Link>
-                                  <img
-                                    src={
-                                      el?.product?.thumb?.[0]
-                                        ?.split(",")[0]
-                                        .split(" ")[0]
-                                    }
-                                    alt=""
-                                  />
+                                  <img src={el?.thumbnail} alt="" />
                                 </Link>
                               </div>
                               <div className="flex flex-col gap-1 w-[202px]">
                                 <span className="overflow-ellipsis overflow-hidden text-sm font-normal">
-                                  {el?.product?.title}
+                                  {el?.name}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                {/* <span className="text-xs text-gray-400">
                                   {el?.color === "Không có" ? "" : el?.color}
-                                </span>
+                                </span> */}
                                 <div className="flex gap-2 text-xs  font-normal">
                                   <span className="w-[32px] h-[16px]">
                                     {/* <CiDeliveryTruck className="w-full" /> */}
@@ -383,7 +436,7 @@ const Cart = () => {
                               </div>
                             </div>
                             <div className="flex">
-                              {formatMoney(el?.product?.prices)}
+                              {formatMoney(el?.price)}
                               <sub>₫</sub>
                             </div>
                             <div>
@@ -392,7 +445,7 @@ const Cart = () => {
                                   <button
                                     className=""
                                     onClick={() =>
-                                      handleQuantity(el?.product?._id, "reduce")
+                                      handleQuantity(el?.id, "reduce")
                                     }
                                   >
                                     <FiMinus />
@@ -400,17 +453,14 @@ const Cart = () => {
                                 </div>
                                 <div className="w-[32px] h-[24px]  border">
                                   <span id="product" className=" p-3">
-                                    {getLocal(el?.product?._id)}
+                                    {getLocal(el?.id)}
                                   </span>
                                 </div>
                                 <div className="w-[23px] h-[24px] rounded-r-sm border pl-[2px] ">
                                   <button
                                     className=""
                                     onClick={() =>
-                                      handleQuantity(
-                                        el?.product?._id,
-                                        "increase"
-                                      )
+                                      handleQuantity(el?.id, "increase")
                                     }
                                   >
                                     <GoPlus />
@@ -419,9 +469,7 @@ const Cart = () => {
                               </div>
                             </div>
                             <div className="flex">
-                              {formatMoney(
-                                el?.product?.prices * getLocal(el?.product?._id)
-                              )}
+                              {formatMoney(el?.price * getLocal(el?.id))}
                               <sub>₫</sub>
                             </div>
                             <span
@@ -443,25 +491,25 @@ const Cart = () => {
                 <div className="bg-white w-full p-4 rounded-xl flex flex-col gap-4 ">
                   <h3 className="font-medium">Sản phẩm mua kèm</h3>
                   <div className="flex gap-2">
-                    {products?.map((el) => (
-                      <div key={el?._id} className="flex gap-2">
+                    {filterProd()?.map((el) => (
+                      <div key={el?.id} className="flex gap-2">
                         <Link to={`/${el?.type}/${el?._id}/${el?.slug}`}>
                           <div className="w-[142px]  hover:rounded-lg h-[240px] hover:bg-gray-100 cursor-pointer flex flex-col gap-2">
                             <img
                               className="rounded-t-lg w-full h-[148px]"
-                              src={el?.thumb?.[0]?.split(",")[0].split(" ")[0]}
+                              src={el?.thumbnail}
                               alt=""
                             />
                             <div className="px-2 flex flex-col w-full h-[80px]">
                               <p className="text-xs font-light h-[36px] text-gray-800 overflow-hidden break-words whitespace-break-spaces ">
-                                {el?.title}
+                                {el?.name}
                               </p>
-                              <span className="flex gap-1">
+                              {/* <span className="flex gap-1">
                                 {renderStartFromNumber(Number(5))}
-                              </span>
+                              </span> */}
                               <div className="flex">
                                 <div className="font-medium">
-                                  {formatMoney(el?.prices)}
+                                  {formatMoney(el?.price)}
                                 </div>
                                 <sup className="top-[0.5em]">đ</sup>
                               </div>
@@ -479,7 +527,7 @@ const Cart = () => {
           <div className="ml-4 w-full flex flex-col">
             <div className="flex flex-col w-full">
               <h3 className="text-xl font-medium p-4 pb-0 ">GIỎ HÀNG</h3>
-              {currentData?.cart?.length === 0 ? (
+              {filterProd()?.length === 0 ? (
                 <div className="w-[96%] mx-4 bg-white flex-col">
                   <div className="p-4">
                     <div className="flex  items-center justify-center">
@@ -513,7 +561,7 @@ const Cart = () => {
                             )}
                           />
                           <span>Tất cả </span>
-                          <span>({currentData?.cart?.length} sản phẩm)</span>
+                          <span>({filterProd()?.length} sản phẩm)</span>
                         </div>
                         <span>Đơn giá</span>
                         <span>Số lượng</span>
@@ -524,9 +572,9 @@ const Cart = () => {
                       </div>
                     </div>
                   </div>
-                  {currentData?.cart &&
-                    currentData?.cart?.map((el) => (
-                      <div className="mx-4   flex " key={el._id}>
+                  {filterProd() &&
+                    filterProd?.map((el) => (
+                      <div className="mx-4   flex " key={el.id}>
                         <div className="bg-white w-full p-4 rounded-xl">
                           <div className="flex justify-between items-center ">
                             <div className=" w-[324px] gap-2 flex ">
@@ -543,23 +591,16 @@ const Cart = () => {
 
                               <div className="w-[80px] h-[80px]">
                                 <Link>
-                                  <img
-                                    src={
-                                      el?.product?.thumb?.[0]
-                                        ?.split(",")[0]
-                                        .split(" ")[0]
-                                    }
-                                    alt=""
-                                  />
+                                  <img src={el?.thumbnail} alt="" />
                                 </Link>
                               </div>
                               <div className="flex flex-col gap-1 w-[202px]">
                                 <span className="overflow-ellipsis overflow-hidden text-sm font-normal">
-                                  {el?.product?.title}
+                                  {el?.name}
                                 </span>
-                                <span className="text-xs text-gray-400">
+                                {/* <span className="text-xs text-gray-400">
                                   {el?.color === "Không có" ? "" : el?.color}
-                                </span>
+                                </span> */}
                                 <div className="flex gap-2 text-xs  font-normal">
                                   <span className="w-[32px] h-[16px]">
                                     {/* <CiDeliveryTruck className="w-full" /> */}
@@ -577,7 +618,7 @@ const Cart = () => {
                               </div>
                             </div>
                             <div className="flex">
-                              {formatMoney(el?.product?.prices)}
+                              {formatMoney(el?.price)}
                               <sub>₫</sub>
                             </div>
                             <div>
@@ -614,7 +655,7 @@ const Cart = () => {
                             </div>
                             <div className="flex">
                               {formatMoney(
-                                el?.product?.prices * getLocal(el?.product?._id)
+                                el?.price * getLocal(el?.product?._id)
                               )}
                               <sub>₫</sub>
                             </div>
@@ -670,7 +711,7 @@ const Cart = () => {
             </div>
           </div>
         )}
-        {currentData?.cart.length > 0 ? (
+        {filterProd()?.length > 0 ? (
           <div className="w-[28%] flex pt-12 flex-col m-4 ml-0 gap-2">
             <div className=" bg-white  rounded-xl p-4 flex-col flex gap-4">
               <span className="font-normal text-gray-400 text-lg overflow-ellipsis overflow-hidden  ">
@@ -678,7 +719,7 @@ const Cart = () => {
               </span>
               <div className="flex items-center gap-2">
                 <span className="font-normal overflow-ellipsis overflow-hidden text-sm ">
-                  <span>{currentData?.fullname}</span>
+                  <span>{currentData?.first_name}</span>
                 </span>
                 <span className="font-normal overflow-ellipsis overflow-hidden text-sm ">
                   <span>{currentData?.email}</span>
@@ -688,7 +729,7 @@ const Cart = () => {
                 <span>{currentData?.address}</span>
               </span>
             </div>
-            <div className=" bg-white  rounded-xl p-4 flex-col flex gap-4">
+            {/* <div className=" bg-white  rounded-xl p-4 flex-col flex gap-4">
               {currentData?.cart?.map((els) => (
                 <div key={els?._id} className="flex items-center gap-2">
                   <img
@@ -701,7 +742,7 @@ const Cart = () => {
                   </span>
                 </div>
               ))}
-            </div>
+            </div> */}
             <div className="bg-white  rounded-xl p-4 flex-col flex gap-4">
               {/* <div className="flex justify-between text-gray-400">
               <span className="">Tạm tính</span>
@@ -710,7 +751,7 @@ const Cart = () => {
               </div>
             </div> */}
 
-              <div className="flex justify-between text-gray-400">
+              {/* <div className="flex justify-between text-gray-400">
                 <span>Tổng tiền</span>
                 <div className="flex flex-col ">
                   <div className="flex justify-end text-red-500  text-2xl">
@@ -729,7 +770,7 @@ const Cart = () => {
                     (Đã bao gồm VAT nếu có)
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col gap-2">
